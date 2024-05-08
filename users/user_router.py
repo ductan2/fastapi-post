@@ -21,12 +21,13 @@ router = APIRouter()
 
 @router.post("/register", response_model=user_schema.User)
 def create_user(user: user_schema.UserCreate, db: Session = Depends(_database.get_db)):
+
     if user.password != user.confirm_password:
         raise HTTPException(status_code=400, detail="Password does not match")
     print("user", user)
-    if user_service.get_user_by_email(db=db, email=user.email):
+    if user_service.get_user_by_email(db=db, email=user.email.lower()):
         raise HTTPException(status_code=400, detail="Email already registered")
-    if user_service.get_user_by_username(db=db, username=user.username):
+    if user_service.get_user_by_username(db=db, username=user.username.lower()):
         raise HTTPException(status_code=400, detail="Username already registered")
     return user_service.create_user(db=db, user=user)
 

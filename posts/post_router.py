@@ -92,16 +92,13 @@ async def getLinkAllFile():
 @router.post('/files/upload')
 async def uploadFile(file: UploadFile = File(...)):
     print(file)
-    # if not post_service.checkFileImage(file):
-    #     raise _fastapi.HTTPException(status_code=400, detail="File is not image")
-    # if not post_service.checkSizeImage(file):
-    #     raise _fastapi.HTTPException(status_code=400, detail="File is too large. Max size is 8MB")
+    if not post_service.checkFileImage(file):
+        raise _fastapi.HTTPException(status_code=400, detail="File is not image")
+    if not post_service.checkSizeImage(file):
+        raise _fastapi.HTTPException(status_code=400, detail="File is too large. Max size is 8MB")
     image_key = _storage_service.upload_file(file)
     image_url = _storage_service.get_link_file(image_key)
     return {
         "image_key": image_key,
         "image_url": image_url
     }
-@router.delete('/delete/post/{post_id}')
-def delete_post(post_id: int, db: _orm.Session = _fastapi.Depends(database.get_db)):
-    return post_service.delete_post_no_user(db=db, post_id=post_id)
