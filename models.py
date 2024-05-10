@@ -15,6 +15,7 @@ class User(_database.Base):
     posts = _orm.relationship("Post", back_populates="owner")
     bookmarks = _orm.relationship("Bookmark", back_populates="user")
 
+
 class Post(_database.Base):
     __tablename__ = "posts"
     id = _sql.Column(_sql.Integer, primary_key=True, index=True)
@@ -28,6 +29,7 @@ class Post(_database.Base):
     date_last_updated = _sql.Column(_sql.DateTime, default=_dt.datetime.utcnow)
     bookmarks = _orm.relationship("Bookmark", back_populates="post")
     owner = _orm.relationship("User", back_populates="posts")
+
 
 class Bookmark(_database.Base):
     __tablename__ = 'bookmarks'

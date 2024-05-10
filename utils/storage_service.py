@@ -9,11 +9,8 @@ router = APIRouter()
 ACCESS_KEY_ID = config('ACCESS_KEY_ID')
 ACCESS_SECRET_KEY = config('ACCESS_SECRET_KEY')
 BUCKET_NAME = config('BUCKET_NAME')
-s3 = boto3.client('s3',
-                  aws_access_key_id=ACCESS_KEY_ID,
-                  aws_secret_access_key=ACCESS_SECRET_KEY,
-                  region_name='ap-southeast-1'
-                  )
+s3 = boto3.client('s3', region_name='ap-southeast-1', aws_access_key_id=ACCESS_KEY_ID,
+                  aws_secret_access_key=ACCESS_SECRET_KEY)
 
 
 async def getAllFile():
@@ -22,10 +19,23 @@ async def getAllFile():
     return res
 
 
+# def get_link_file(file_key):
+#     print(file_key)
+#     return s3.generate_presigned_url('get_object',
+#                                      Params={'Bucket': BUCKET_NAME, 'Key': file_key,
+#                                              "Content-Type": "application/octet-stream"}, ExpiresIn=3600)
+
 def get_link_file(file_key):
-    print(file_key)
-    return s3.generate_presigned_url('get_object',
-                                     Params={'Bucket': BUCKET_NAME, 'Key': file_key}, ExpiresIn=3600)
+    return s3.generate_presigned_url('get_object', Params={'Bucket': BUCKET_NAME, 'Key': file_key}, ExpiresIn=3600)
+def get_presign_url(file_key):
+
+    print(ACCESS_KEY_ID, ACCESS_SECRET_KEY)
+    presigned_url = s3.generate_presigned_url(
+        'put_object',
+        Params={'Bucket': BUCKET_NAME, 'Key': file_key, 'ContentType': 'application/octet-stream'},
+        ExpiresIn=3600,
+    )
+    return presigned_url
 
 
 def delete_file(file_key):

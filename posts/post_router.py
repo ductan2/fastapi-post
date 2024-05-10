@@ -4,7 +4,7 @@ import database
 from typing import List
 import fastapi as _fastapi
 import sqlalchemy.orm as _orm
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import APIRouter, UploadFile, File, Form, Request
 import schemas as post_schema
 from posts import post_service
 import auth.jwt_handler as _jwt_handler
@@ -21,9 +21,11 @@ def create_post(
 ):
     return post_service.create_post(db=db, post=post, user_id=user.id, )
 
+
 @router.get('/random/{post_id}')
 def get_random_posts(post_id: int, db: _orm.Session = _fastapi.Depends(database.get_db)):
     return post_service.get_random_posts(db=db, post_id=post_id)
+
 
 @router.get('/user', response_model=List[post_schema.Post])
 def get_post_by_user(user=_fastapi.Depends(_jwt_handler.get_user_by_token),
@@ -38,8 +40,7 @@ def read_posts(
         date: datetime = None,
         db: _orm.Session = _fastapi.Depends(database.get_db),
 ):
-    print(date)
-    posts = post_service.get_posts_with_filters(db=db, page=page, category=category,date=date)
+    posts = post_service.get_posts_with_filters(db=db, page=page, category=category, date=date)
     return posts
 
 
@@ -77,6 +78,15 @@ def update_post(
 @router.post('/upload')
 async def uploadImage(file: UploadFile = File(...)):
     return await _storage_service.upload_file(file=file)
+
+
+@router.post("/file/get-presign-url")
+async def get_presign_url(request: Request):
+    body = await request.json()
+    extension = body.get('extension')
+    print(extension)
+
+    return _storage_service.get_presign_url(extension)
 
 
 @router.get('/files/all')

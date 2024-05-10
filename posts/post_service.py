@@ -22,7 +22,6 @@ def get_posts_with_filters(db: _orm.Session, category: str = None, date: _dt.dat
     if date:
         date = date + _dt.timedelta(days=1)
         query = query.filter(_models.Post.date_created <= date)
-    print("ok1")
     query = query.order_by(_models.Post.date_last_updated.desc())
     posts = query.offset(offset).limit(limit).all()
 
@@ -79,13 +78,14 @@ def checkSizeImage(file: UploadFile):
 
 
 def create_post(db: _orm.Session, post: post_schema.PostCreate, user_id: int):
+    presignURL = storage_service.get_presign_url(post.image_key)
     post = _models.Post(**post.dict(), owner_id=user_id,
                         date_created=_dt.datetime.now(),
                         date_last_updated=_dt.datetime.now())
     db.add(post)
     db.commit()
     db.refresh(post)
-    return post
+    return presignURL
 
 
 def get_post(db: _orm.Session, post_id: int):
@@ -100,12 +100,15 @@ def get_post(db: _orm.Session, post_id: int):
 def get_post_by_id(db: _orm.Session, post_id: int):
     return db.query(_models.Post).filter(_models.Post.id == post_id).first()
 
+
 def delete_post_no_user(db: _orm.Session, post_id: int):
     post = db.query(_models.Post).filter(_models.Post.id == post_id).first()
     if post is None:
         raise HTTPException(status_code=404, detail="Post not found")
     db.delete(post)
     db.commit()
+
+
 def delete_post(db: _orm.Session, post_id: int, user_id: int):
     print(user_id)
     post = db.query(_models.Post).filter(_models.Post.id == post_id, _models.Post.owner_id == user_id).first()
